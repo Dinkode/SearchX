@@ -1,5 +1,5 @@
 export const FIELD_NAMES = {
-    AUTOCOMPLETE: 'autocomplete'
+    AUTOCOMPLETE: "autocomplete"
 };
 
 //TODO move to .env
