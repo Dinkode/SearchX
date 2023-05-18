@@ -1,26 +1,30 @@
-import {useEffect, useState} from "react";
-import {autocompleteMedicamentNames, getMedicaments} from "./actions/searchActions";
+import {useState} from "react";
 import AutocompleteInput from "./components/AutocompleteInput";
-import {FIELD_NAMES} from "./utils/constants";
 import React from "react"
+import Pagination from "./components/Pagination";
 
 function App() {
 
     const [items, setItems] = useState({total:0, lastPage:0, data:[]});
-
+    const [currentPage, setCurrentPage] = useState(null);
 
     const renderItems = () => {
-        return items.data?.map((item, index) => {
-            return <div>
-                <h2>{item.name}</h2>
-            </div>
-        })
+        const data = items.data?.map((item, index) => {
+            return <article key={'item'+index}>
+                <h3><a href={"#"}>{item.name}</a></h3>
+                <p>{item.description}</p>
+            </article>
+        });
+        return <section className='items'>{data}</section>
     };
+
+    const pagination = items.data.length ? <Pagination currentPage={currentPage} totalElements={items.total} setCurrentPage={setCurrentPage}/> : null;
 
     return (
         <div className='search'>
-            <AutocompleteInput setItems={setItems}/>
+            <AutocompleteInput setItems={setItems} setCurrentPage={setCurrentPage} page={currentPage}/>
             {renderItems()}
+            {pagination}
         </div>
     );
 }

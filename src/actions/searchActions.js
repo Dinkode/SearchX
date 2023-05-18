@@ -12,12 +12,15 @@ export const autocompleteMedicamentNames = async (name) => {
 
 export const getMedicaments = async (medicamentName, page) => {
 
+    const startTime = new Date().getTime();
     const response = await axios.get("medicaments", {
         params: {
             medicamentName,
             page,
             perPage: ITEMS_PER_PAGE
         }
-    });
-    return response.data
+    })
+    const endTime = new Date().getTime();
+    const time = (endTime - startTime)/1000;
+    return {...response.data, time}
 };

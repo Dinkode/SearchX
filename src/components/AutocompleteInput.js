@@ -4,22 +4,36 @@ import magnifier from "../resources/magnifier.svg";
 import {getItem, setItem} from "../actions/localStorageActions";
 import {LOCAL_STORAGE_TYPES} from "../utils/constants";
 
-const AutocompleteInput = ({setItems}) => {
+const AutocompleteInput = ({setItems, page, setCurrentPage}) => {
 
     const [data, setData] = useState([]);
     const [isFocused, setIsFocused] = useState(true);
     const [value, setValue] = useState("");
     const inputRef = useRef();
-    const [history, setHistory] = useState([])
+    const [history, setHistory] = useState([]);
+    const [results, setResults] = useState(0);
+    const [time, setTime] = useState(0);
+
+
+    useEffect(()=>{
+        if (page != null) {
+            const search = async () => {
+                const items = await getMedicaments(value, page);
+                setItems(items);
+            };
+            search()
+        }
+    }, [page]);
 
     useEffect(() => {
         getHistoryFromLocalStorage();
         inputRef.current.focus();
         const hideAutocomplete = (e)=>{
-            if (e.target.tagName === "HTML") {
+            console.log(e.target.tagName)
+            if (e.target.tagName === "HTML" || e.target.tagName === "DIV" || e.target.tagName === "FORM") {
                 setIsFocused(false)
             }
-        }
+        };
         document.addEventListener('mousedown', hideAutocomplete)
         return ()=>document.removeEventListener('mousedown', hideAutocomplete)
     }, []);
@@ -42,6 +56,9 @@ const AutocompleteInput = ({setItems}) => {
     const onItemClick = async (value) => {
         setValue(value);
         const items = await getMedicaments(value, 1);
+        setResults(items.total);
+        setTime(items.time);
+        setCurrentPage(1);
         setItems(items);
         setIsFocused(false);
         if (!history.includes(value)) {
@@ -61,8 +78,8 @@ const AutocompleteInput = ({setItems}) => {
                                                                  const currentHistory = history.filter(item => item !== name);
                                                                  setItem(currentHistory, LOCAL_STORAGE_TYPES.SEARCH_HISTORY);
                                                                  await getHistoryFromLocalStorage();
-                                                             }}>delete</span> : null;
-            return <p className={className} onClick={() => onItemClick(name)}>{name}{deleteFromHistory}</p>
+                                                             }}>Премахни</span> : null;
+            return <p className={className} key={'list'+index} onClick={() => onItemClick(name)}>{name}{deleteFromHistory}</p>
         });
         return <div className='list' onBlur={()=>setIsFocused(false)} onBlurCapture={()=>setIsFocused(false)}>
             {items}
@@ -72,7 +89,10 @@ const AutocompleteInput = ({setItems}) => {
     const onSubmit = async (e) => {
         e.preventDefault();
         const items = await getMedicaments(value, 1);
+        setCurrentPage(1);
         setItems(items);
+        setResults(items.total);
+        setTime(items.time);
         setIsFocused(false);
         if (!history.includes(value)) {
             setItem([...history, value], LOCAL_STORAGE_TYPES.SEARCH_HISTORY)
@@ -80,6 +100,12 @@ const AutocompleteInput = ({setItems}) => {
         await getHistoryFromLocalStorage();
 
     };
+
+    const renderResults = () => {
+        if (results) {
+            return <p className='results'>Около {results} резултата ({time} секунди)</p>
+        }
+    }
 
     const fieldContainerClassName = isFocused ? "autocomplete-field-container focused" : "autocomplete-field-container";
 
@@ -91,6 +117,8 @@ const AutocompleteInput = ({setItems}) => {
                        onClick={() => setIsFocused(true)} ref={inputRef}/>
                 {renderList()}
             </div>
+            {renderResults()}
+
         </form>
     )
 
