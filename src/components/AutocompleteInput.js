@@ -29,7 +29,6 @@ const AutocompleteInput = ({setItems, page, setCurrentPage}) => {
         getHistoryFromLocalStorage();
         inputRef.current.focus();
         const hideAutocomplete = (e)=>{
-            console.log(e.target.tagName)
             if (e.target.tagName === "HTML" || e.target.tagName === "DIV" || e.target.tagName === "FORM") {
                 setIsFocused(false)
             }
